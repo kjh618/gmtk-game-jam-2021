@@ -1,7 +1,7 @@
 extends Area2D
 class_name Player
 
-enum State { IDLE, SELECTED }
+enum State { IDLE, SELECTED, ACTION_DONE }
 
 enum ActionType {
     MOVE,
@@ -9,9 +9,11 @@ enum ActionType {
     LONG_ATTACK,
     DEFEND,
     HEAL,
-    BUFF_MOVES,
     MOVE_STRAIGHT,
+    BUFF_MOVES,
 }
+
+enum BoardOverlay { MOVE, ATTACK, DEFENCE }
 
 onready var BOARD := get_parent()
 
@@ -36,37 +38,72 @@ func set_state(new_state: int) -> void:
             $Sprite.modulate = Color.green
 
 
-func try_do_action(target_board_position: Vector2) -> bool:
-    var action_type: int = BOARD.get_action_type(BOARD.to_board_position(position))
-    print("Action type: ", action_type)
+func show_overlay():
+    var board_position: Vector2 = BOARD.to_board_position(position)
+    var action_type: int = BOARD.get_action_type(board_position)
+    print("Show overlay: ", action_type)
+
     match action_type:
         ActionType.MOVE:
-            return try_move_to(target_board_position)
+            show_move_overlay(board_position)
         ActionType.SHORT_ATTACK:
-            if !Helper.is_in_square(target_board_position, short_attack_range):
-                return false
-            var enemies: Array = BOARD.get_enemies_in_square(target_board_position, short_attack_range)
-            for enemy in enemies:
-                enemy.health -= short_attack_damage
+            BOARD.set_overlay_in_square(board_position, short_attack_range, BoardOverlay.ATTACK)
         ActionType.LONG_ATTACK:
-            if !Helper.is_in_square(target_board_position, long_attack_range):
+            BOARD.set_overlay_in_square(board_position, long_attack_range, BoardOverlay.ATTACK)
+        ActionType.DEFEND:
+            return
+        ActionType.HEAL:
+            return
+        ActionType.MOVE_STRAIGHT:
+            return
+        ActionType.BUFF_MOVES:
+            return
+
+
+func show_move_overlay(board_position: Vector2 = BOARD.to_board_position(position)):
+    print("Show move overlay")
+    BOARD.set_overlay_in_square(board_position, max_move_distance, BoardOverlay.MOVE)
+
+
+func try_do_action(target_board_position: Vector2) -> bool:
+    var board_position: Vector2 = BOARD.to_board_position(position)
+    var action_type: int = BOARD.get_action_type(board_position)
+    print("Try do action: ", action_type)
+
+    match action_type:
+        ActionType.MOVE:
+            return try_move(target_board_position)
+        ActionType.SHORT_ATTACK:
+            if !BOARD.is_in_square(target_board_position, board_position, short_attack_range):
                 return false
             var enemy: Enemy = BOARD.get_enemy(target_board_position)
+            if enemy == null:
+                return false
+            enemy.health -= short_attack_damage
+        ActionType.LONG_ATTACK:
+            if !BOARD.is_in_square(target_board_position, board_position, long_attack_range):
+                return false
+            var enemy: Enemy = BOARD.get_enemy(target_board_position)
+            if enemy == null:
+                return false
             enemy.health -= long_attack_damage
         ActionType.DEFEND:
             defence += 10
         ActionType.HEAL:
             health += 10
-        ActionType.BUFF_MOVES:
-            return false
         ActionType.MOVE_STRAIGHT:
+            return false
+        ActionType.BUFF_MOVES:
             return false
     return true
 
 
-func try_move_to(board_position: Vector2) -> bool:
-    var board_offset: Vector2 = board_position - BOARD.to_board_position(position)
-    if !Helper.is_in_square(board_offset, max_move_distance):
+func try_move(target_board_position: Vector2) -> bool:
+    var board_position: Vector2 = BOARD.to_board_position(position)
+    print("Try move: ", board_position, " -> ", target_board_position)
+
+    if !BOARD.is_in_square(target_board_position, board_position, max_move_distance):
         return false
-    position = BOARD.to_local_position(board_position)
+
+    position = BOARD.to_local_position(target_board_position)
     return true

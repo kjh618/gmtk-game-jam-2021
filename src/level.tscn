@@ -7,15 +7,16 @@
 [node name="Level" type="Node2D"]
 
 [node name="Board" parent="." instance=ExtResource( 1 )]
+position = Vector2( 544, 32 )
 
 [node name="Player" parent="Board" instance=ExtResource( 2 )]
-position = Vector2( 32, 480 )
+position = Vector2( -320, 320 )
 
 [node name="Player2" parent="Board" instance=ExtResource( 2 )]
-position = Vector2( 96, 416 )
+position = Vector2( -192, 384 )
 
 [node name="Player3" parent="Board" instance=ExtResource( 2 )]
-position = Vector2( 160, 480 )
+position = Vector2( -64, 448 )
 
 [node name="Enemy" parent="Board" instance=ExtResource( 3 )]
-position = Vector2( 480, 32 )
+position = Vector2( 0, 96 )
