@@ -9,14 +9,22 @@
 [node name="Board" parent="." instance=ExtResource( 1 )]
 position = Vector2( 544, 32 )
 
-[node name="Player" parent="Board" instance=ExtResource( 2 )]
+[node name="Player" parent="Board/Players" index="0" instance=ExtResource( 2 )]
 position = Vector2( -320, 320 )
 
-[node name="Player2" parent="Board" instance=ExtResource( 2 )]
+[node name="Player2" parent="Board/Players" index="1" instance=ExtResource( 2 )]
 position = Vector2( -192, 384 )
 
-[node name="Player3" parent="Board" instance=ExtResource( 2 )]
+[node name="Player3" parent="Board/Players" index="2" instance=ExtResource( 2 )]
 position = Vector2( -64, 448 )
 
-[node name="Enemy" parent="Board" instance=ExtResource( 3 )]
-position = Vector2( 0, 96 )
+[node name="Enemy" parent="Board/Enemies" index="0" instance=ExtResource( 3 )]
+position = Vector2( 128, 416 )
+
+[node name="Enemy2" parent="Board/Enemies" index="1" instance=ExtResource( 3 )]
+position = Vector2( 128, 160 )
+
+[node name="Enemy3" parent="Board/Enemies" index="2" instance=ExtResource( 3 )]
+position = Vector2( 256, 224 )
+
+[editable path="Board"]
