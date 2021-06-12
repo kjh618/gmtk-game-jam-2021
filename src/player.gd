@@ -23,10 +23,21 @@ export var short_attack_range := 1
 export var short_attack_damage := 60
 export var long_attack_range := 4
 export var long_attack_damage := 30
+export var defend_amount := 10
+export var heal_amount := 10
+export var move_straight_distance := 3
+export var buff_moves_distance := 3
 
-export var health := 100
+export var health := 100 setget set_health
 export var defence := 0
 var state: int = State.IDLE setget set_state
+
+
+func set_health(new_health: int) -> void:
+    health = new_health
+    $HealthBar.value = health
+    if (health < 0):
+        queue_free()
 
 
 func set_state(new_state: int) -> void:
@@ -52,13 +63,21 @@ func show_overlay(action_type: int):
         ActionType.LONG_ATTACK:
             BOARD.set_overlay_in_square(board_position, long_attack_range, BoardOverlay.ATTACK)
         ActionType.DEFEND:
-            return
+            BOARD.set_overlay(board_position, BoardOverlay.DEFENCE)
         ActionType.HEAL:
-            return
+            BOARD.set_overlay(board_position, BoardOverlay.DEFENCE)
         ActionType.MOVE_STRAIGHT:
-            return
+            for x_or_y in [1, 0]:
+                for d in range(-move_straight_distance, move_straight_distance + 1):
+                    var v := Vector2(d * x_or_y, d * -(x_or_y - 1))
+                    if v == Vector2.ZERO \
+                            or !BOARD.is_in_board(board_position + v) \
+                            or !BOARD.is_available(board_position + v):
+                        continue
+                    BOARD.set_overlay(board_position + v, BoardOverlay.MOVE)
         ActionType.BUFF_MOVES:
-            return
+            for player in BOARD.get_node("Players").get_children():
+                BOARD.set_overlay(BOARD.to_board_position(player.position), BoardOverlay.MOVE)
 
 
 func try_do_action(action_type: int, target_board_position: Vector2) -> bool:
@@ -71,7 +90,7 @@ func try_do_action(action_type: int, target_board_position: Vector2) -> bool:
             if !BOARD.is_in_square(target_board_position, board_position, max_move_distance) \
                     or !BOARD.is_available(target_board_position):
                 return false
-            position = BOARD.to_local_position(target_board_position)
+            move_to(target_board_position)
 
         ActionType.SHORT_ATTACK:
             if !BOARD.is_in_square(target_board_position, board_position, short_attack_range):
@@ -90,15 +109,42 @@ func try_do_action(action_type: int, target_board_position: Vector2) -> bool:
             enemy.health -= long_attack_damage
 
         ActionType.DEFEND:
-            defence += 10
+            if target_board_position != board_position:
+                return false
+            defence += defend_amount
 
         ActionType.HEAL:
-            health += 10
+            if target_board_position != board_position:
+                return false
+            self.health += heal_amount
 
         ActionType.MOVE_STRAIGHT:
+            for x_or_y in [1, 0]:
+                for d in range(-move_straight_distance, move_straight_distance + 1):
+                    var v := Vector2(d * x_or_y, d * -(x_or_y - 1))
+                    if v == Vector2.ZERO \
+                            or !BOARD.is_in_board(board_position + v) \
+                            or !BOARD.is_available(board_position + v):
+                        continue
+                    if target_board_position - board_position == v:
+                        move_to(target_board_position)
+                        return true
             return false
 
         ActionType.BUFF_MOVES:
             return false
 
     return true
+
+
+func move_to(target_board_position: Vector2):
+    var board_position: Vector2 = BOARD.to_board_position(position)
+    if BOARD.get_action_type(board_position) == ActionType.BUFF_MOVES:
+        for player in BOARD.get_node("Players").get_children():
+            player.max_move_distance = 2 # TODO
+
+    position = BOARD.to_local_position(target_board_position)
+
+    if BOARD.get_action_type(target_board_position) == ActionType.BUFF_MOVES:
+        for player in BOARD.get_node("Players").get_children():
+            player.max_move_distance = buff_moves_distance

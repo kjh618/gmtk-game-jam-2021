@@ -25,7 +25,7 @@ func _input(event: InputEvent) -> void:
         print("Board clicked: ", clicked_board_position)
 
         var player := get_player(clicked_board_position)
-        if player != null:
+        if player != null and player != selected_player:
             select_player(player)
         elif selected_player != null and action_type != ActionType.NOT_SET:
             match action_type:
@@ -79,12 +79,17 @@ func is_in_square(board_position: Vector2, square_center: Vector2, square_radius
 
 
 func is_available(board_position: Vector2) -> bool:
-    return get_player(board_position) == null and get_enemy(board_position) == null
+    return get_player(board_position) == null and get_enemy(board_position) == null \
+            and $TileMap.get_cellv(board_position) == 0
+
+
+func get_action_type(board_position: Vector2) -> int:
+    var index: int = $SkillsTileMap.get_cellv(board_position)
+    return Player.ActionType.MOVE if index == TileMap.INVALID_CELL else index
 
 
 func get_selected_player_action_type() -> int:
-    var index: int = $SkillsTileMap.get_cellv(to_board_position(selected_player.position))
-    return Player.ActionType.MOVE if index == TileMap.INVALID_CELL else index
+    return get_action_type(to_board_position(selected_player.position))
 
 
 func get_player(board_position: Vector2) -> Player:
