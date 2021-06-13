@@ -50,7 +50,6 @@ static func get_texture(action_type: int) -> AtlasTexture:
             p.y * TEXTURE_HEIGHT + TEXTURE_PADDING_Y,
             TEXTURE_WIDTH - TEXTURE_PADDING_X * 2,
             TEXTURE_HEIGHT - TEXTURE_PADDING_Y * 2)
-    print(texture.region)
     return texture
 
 

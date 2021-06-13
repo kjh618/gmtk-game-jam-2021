@@ -17,7 +17,7 @@ __meta__ = {
 margin_right = 158.0
 margin_bottom = 14.0
 size_flags_horizontal = 3
-text = "Move"
+text = "Move (Click)"
 align = 1
 
 [node name="SkillTitle" type="Label" parent="."]
@@ -25,7 +25,7 @@ margin_left = 162.0
 margin_right = 320.0
 margin_bottom = 14.0
 size_flags_horizontal = 3
-text = "Skill"
+text = "Skill (Shift + Click)"
 align = 1
 
 [node name="MoveHBoxContainer" type="HBoxContainer" parent="."]

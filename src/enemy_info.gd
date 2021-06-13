@@ -2,4 +2,4 @@ extends VBoxContainer
 
 
 func set_info(enemy: Enemy) -> void:
-    pass
+    $VBoxContainer/IntentInfo.bbcode_text = enemy.get_description()
