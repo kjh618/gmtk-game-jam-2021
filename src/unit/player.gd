@@ -68,7 +68,7 @@ func try_do_action(action_type: int, target_board_position: Vector2) -> bool:
 
     match action_type:
         Action.Type.MOVE:
-            if !BOARD.is_in_square(target_board_position, board_position, Action.MOVE_DISTANCE) \
+            if !BOARD.is_in_square(target_board_position, board_position, move_distance) \
                     or !BOARD.is_available(target_board_position):
                 return false
             move_to(target_board_position)
@@ -92,7 +92,7 @@ func try_do_action(action_type: int, target_board_position: Vector2) -> bool:
             var enemy: Enemy = BOARD.get_enemy(target_board_position)
             if enemy == null:
                 return false
-            .attack(enemy, Action.SHORT_ATTACK_DAMAGE)
+            .attack(enemy, Action.SHORT_ATTACK_DAMAGE, AttackAnimation.FIREBALL)
 
         Action.Type.LONG_ATTACK:
             if !BOARD.is_in_square(target_board_position, board_position, Action.LONG_ATTACK_DAMAGE):
@@ -100,7 +100,7 @@ func try_do_action(action_type: int, target_board_position: Vector2) -> bool:
             var enemy: Enemy = BOARD.get_enemy(target_board_position)
             if enemy == null:
                 return false
-            .attack(enemy, Action.LONG_ATTACK_DAMAGE)
+            .attack(enemy, Action.LONG_ATTACK_DAMAGE, AttackAnimation.LIGHTNING)
 
         Action.Type.HEAL:
             if target_board_position != board_position:

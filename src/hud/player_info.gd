@@ -16,8 +16,8 @@ func _input(event: InputEvent) -> void:
 
 func set_info(player: Player) -> void:
     $MoveHBoxContainer/MoveIcon.texture = Action.get_texture(Action.Type.MOVE)
-    $MoveHBoxContainer/MoveInfo.bbcode_text = Action.get_description(Action.Type.MOVE)
+    $MoveHBoxContainer/MoveInfo.bbcode_text = Action.get_description(Action.Type.MOVE, player.move_distance)
 
     var action_type: int = player.get_action_type()
     $SkillHBoxContainer/SkillIcon.texture = Action.get_texture(action_type)
-    $SkillHBoxContainer/SkillInfo.bbcode_text = Action.get_description(action_type)
+    $SkillHBoxContainer/SkillInfo.bbcode_text = Action.get_description(action_type, player.move_distance)

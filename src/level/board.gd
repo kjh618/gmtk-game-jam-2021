@@ -2,7 +2,7 @@ extends Node2D
 
 
 enum Turn { PLAYER, ENEMY }
-onready var MAIN := get_parent().get_parent()
+onready var MAIN := get_node("/root/Main")
 
 
 export var width := 8
@@ -10,6 +10,10 @@ export var height := 8
 
 var selected_unit: Unit = null
 var turn: int = Turn.PLAYER
+
+
+func _ready() -> void:
+    MAIN.hud_update_help_text("initial")
 
 
 func _input(event: InputEvent) -> void:
@@ -23,6 +27,10 @@ func _input(event: InputEvent) -> void:
         print("Board clicked: ", clicked_board_position)
 
         var unit := get_unit(clicked_board_position)
+
+        if unit != null and unit.state == Unit.State.ACTION_DONE:
+            MAIN.hud_update_help_text("error_action_done", 5)
+
         var clicked_on_idle_unit: bool = unit != null and unit.state == Unit.State.IDLE
         var player_selected: bool = selected_unit != null and selected_unit.type == Unit.Type.PLAYER
         var using_skill: bool = player_selected and event.shift
@@ -31,22 +39,26 @@ func _input(event: InputEvent) -> void:
             select_unit(unit)
             $OverlayTileMap.clear()
             selected_unit.show_overlay()
+            MAIN.hud_update_help_text("move")
         elif player_selected:
             var action: int = selected_unit.get_action_type() if using_skill else Action.Type.MOVE
             if selected_unit.try_do_action(action, clicked_board_position) == true:
                 selected_unit.state = Unit.State.ACTION_DONE
                 select_unit(null)
                 $OverlayTileMap.clear()
+                MAIN.hud_update_help_text("select")
 
     elif event.is_action_pressed("modifier_skill"):
         if selected_unit != null and selected_unit.type == Unit.Type.PLAYER:
             $OverlayTileMap.clear()
             selected_unit.show_skill_overlay(selected_unit.get_action_type())
+            MAIN.hud_update_help_text("use_skill")
 
     elif event.is_action_released("modifier_skill"):
         if selected_unit != null and selected_unit.type == Unit.Type.PLAYER:
             $OverlayTileMap.clear()
             selected_unit.show_overlay()
+            MAIN.hud_update_help_text("move")
     
     elif event.is_action_pressed("end_turn"):
         end_player_turn()
@@ -132,7 +144,7 @@ func select_unit(unit: Unit) -> void:
     if selected_unit != null and selected_unit.state == Unit.State.SELECTED:
         selected_unit.state = Unit.State.IDLE
     selected_unit = unit
-    MAIN.update_unit_hud(selected_unit)
+    MAIN.hud_update_unit_hud(selected_unit)
     if selected_unit != null:
         selected_unit.state = Unit.State.SELECTED
 
@@ -141,10 +153,22 @@ func start_player_turn() -> void:
     for player in $Players.get_children():
         player.state = Unit.State.IDLE
     turn = Turn.PLAYER
+    MAIN.hud_end_turn_button_set_disabled(false)
+    MAIN.hud_update_help_text("select")
 
 
 func end_player_turn() -> void:
+    next_level_if_won()
+
     select_unit(null)
     $OverlayTileMap.clear()
     turn = Turn.ENEMY
+    MAIN.hud_end_turn_button_set_disabled(true)
+    MAIN.hud_update_help_text("enemy_turn")
     $Enemies.do_turn()
+
+
+func next_level_if_won():
+    if $Enemies.get_child_count() == 0:
+        yield(get_tree().create_timer(1), "timeout")
+        MAIN.try_next_level()

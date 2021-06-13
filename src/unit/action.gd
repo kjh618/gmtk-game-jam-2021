@@ -53,10 +53,10 @@ static func get_texture(action_type: int) -> AtlasTexture:
     return texture
 
 
-static func get_description(action_type: int) -> String:
+static func get_description(action_type: int, move_distance: int = MOVE_DISTANCE) -> String:
     match action_type:
         Type.MOVE:
-            return "Move %d" % MOVE_DISTANCE
+            return "Move %d" % move_distance
         Type.MOVE_STRAIGHT:
             return "Move straight %d" % MOVE_STRAIGHT_DISTANCE
         Type.SHORT_ATTACK:
