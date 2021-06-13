@@ -1,0 +1,42 @@
+[gd_scene load_steps=2 format=2]
+
+[ext_resource path="res://src/enemy_info.gd" type="Script" id=1]
+
+[node name="EnemyInfo" type="VBoxContainer"]
+margin_right = 320.0
+margin_bottom = 128.0
+script = ExtResource( 1 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="IntentTitle" type="Label" parent="."]
+margin_right = 320.0
+margin_bottom = 14.0
+size_flags_horizontal = 3
+text = "Intent"
+align = 1
+
+[node name="VBoxContainer" type="HBoxContainer" parent="."]
+margin_top = 18.0
+margin_right = 320.0
+margin_bottom = 128.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="IntentIcon" type="TextureRect" parent="VBoxContainer"]
+margin_top = 55.0
+margin_bottom = 55.0
+size_flags_vertical = 4
+
+[node name="IntentInfo" type="RichTextLabel" parent="VBoxContainer"]
+margin_left = 4.0
+margin_top = 47.0
+margin_right = 320.0
+margin_bottom = 62.0
+size_flags_horizontal = 3
+size_flags_vertical = 4
+bbcode_enabled = true
+bbcode_text = "[center]0[/center]"
+text = "0"
+fit_content_height = true

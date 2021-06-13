@@ -1,16 +1,14 @@
 extends Node2D
 
 
-enum ActionType { NOT_SET, MOVE, SKILL }
-
 enum Turn { PLAYER, ENEMY }
+onready var MAIN := get_parent().get_parent()
 
 
 export var width := 8
 export var height := 8
 
-var selected_player: Player = null
-var action_type: int = ActionType.NOT_SET
+var selected_unit: Unit = null
 var turn: int = Turn.PLAYER
 
 
@@ -18,46 +16,40 @@ func _input(event: InputEvent) -> void:
     if turn == Turn.ENEMY:
         return
 
-    if event.is_action_released("select"):
+    if event.is_action_released("click"):
         var clicked_board_position: Vector2 = to_board_position(to_local(event.position))
         if !is_in_board(clicked_board_position):
             return
         print("Board clicked: ", clicked_board_position)
 
-        var player := get_player(clicked_board_position)
-        if player != null and player != selected_player:
-            select_player(player)
-        elif selected_player != null and action_type != ActionType.NOT_SET:
-            match action_type:
-                ActionType.MOVE:
-                    if selected_player.try_do_action(
-                            Player.ActionType.MOVE,
-                            clicked_board_position) == true:
-                        selected_player.state = Player.State.ACTION_DONE
-                        select_player(null)
-                ActionType.SKILL:
-                    if selected_player.try_do_action(
-                            get_selected_player_action_type(),
-                            clicked_board_position) == true:
-                        selected_player.state = Player.State.ACTION_DONE
-                        select_player(null)
+        var unit := get_unit(clicked_board_position)
+        var clicked_on_idle_unit: bool = unit != null and unit.state == Unit.State.IDLE
+        var player_selected: bool = selected_unit != null and selected_unit.type == Unit.Type.PLAYER
+        var using_skill: bool = player_selected and event.shift
 
-    elif event.is_action_pressed("move"):
-        if selected_player != null:
-            action_type = ActionType.MOVE
+        if clicked_on_idle_unit and not using_skill:
+            select_unit(unit)
             $OverlayTileMap.clear()
-            selected_player.show_overlay(Player.ActionType.MOVE)
+            selected_unit.show_overlay()
+        elif player_selected:
+            var action: int = selected_unit.get_action_type() if using_skill else Action.Type.MOVE
+            if selected_unit.try_do_action(action, clicked_board_position) == true:
+                selected_unit.state = Unit.State.ACTION_DONE
+                select_unit(null)
+                $OverlayTileMap.clear()
 
-    elif event.is_action_pressed("skill"):
-        if selected_player != null:
-            action_type = ActionType.SKILL
+    elif event.is_action_pressed("modifier_skill"):
+        if selected_unit != null and selected_unit.type == Unit.Type.PLAYER:
             $OverlayTileMap.clear()
-            selected_player.show_overlay(get_selected_player_action_type())
+            selected_unit.show_skill_overlay(selected_unit.get_action_type())
+
+    elif event.is_action_released("modifier_skill"):
+        if selected_unit != null and selected_unit.type == Unit.Type.PLAYER:
+            $OverlayTileMap.clear()
+            selected_unit.show_overlay()
     
     elif event.is_action_pressed("end_turn"):
-        select_player(null)
-        turn = Turn.ENEMY
-        $Enemies.do_turn()
+        end_player_turn()
 
 
 func to_board_position(position: Vector2) -> Vector2:
@@ -85,11 +77,15 @@ func is_available(board_position: Vector2) -> bool:
 
 func get_action_type(board_position: Vector2) -> int:
     var index: int = $SkillsTileMap.get_cellv(board_position)
-    return Player.ActionType.MOVE if index == TileMap.INVALID_CELL else index
+    return Action.Type.MOVE if index == TileMap.INVALID_CELL else index
 
 
-func get_selected_player_action_type() -> int:
-    return get_action_type(to_board_position(selected_player.position))
+func get_unit(board_position: Vector2) -> Unit:
+    var units := $Players.get_children() + $Enemies.get_children()
+    for unit in units:
+        if to_board_position(unit.position) == board_position:
+            return unit
+    return null
 
 
 func get_player(board_position: Vector2) -> Player:
@@ -132,21 +128,23 @@ func set_overlay_in_square(
             set_overlay(square_center + v, overlay)
 
 
-func select_player(player: Player) -> void:
-    if player != null and player.state == Player.State.ACTION_DONE:
-        return
-
-    if selected_player != null and selected_player.state == Player.State.SELECTED:
-        selected_player.state = Player.State.IDLE
-    selected_player = player
-    if selected_player != null:
-        selected_player.state = Player.State.SELECTED
-
-    action_type = ActionType.NOT_SET
-    $OverlayTileMap.clear()
+func select_unit(unit: Unit) -> void:
+    if selected_unit != null and selected_unit.state == Unit.State.SELECTED:
+        selected_unit.state = Unit.State.IDLE
+    selected_unit = unit
+    MAIN.update_unit_hud(selected_unit)
+    if selected_unit != null:
+        selected_unit.state = Unit.State.SELECTED
 
 
 func start_player_turn() -> void:
     for player in $Players.get_children():
-        player.state = Player.State.IDLE
+        player.state = Unit.State.IDLE
     turn = Turn.PLAYER
+
+
+func end_player_turn() -> void:
+    select_unit(null)
+    $OverlayTileMap.clear()
+    turn = Turn.ENEMY
+    $Enemies.do_turn()
