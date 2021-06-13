@@ -1,8 +1,8 @@
 extends CanvasLayer
 
 
-const PlayerInfo := preload("res://src/player_info.tscn")
-const EnemyInfo := preload("res://src/enemy_info.tscn")
+const PlayerInfo := preload("res://src/hud/player_info.tscn")
+const EnemyInfo := preload("res://src/hud/enemy_info.tscn")
 
 
 onready var SELECTED_UNIT_LABEL := $Panel/VBoxContainer/SelectedUnitLabel

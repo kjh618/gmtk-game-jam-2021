@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=2]
 
-[ext_resource path="res://src/enemy_info.gd" type="Script" id=1]
+[ext_resource path="res://src/hud/enemy_info.gd" type="Script" id=1]
 
 [node name="EnemyInfo" type="VBoxContainer"]
 margin_right = 320.0
