@@ -63,6 +63,7 @@ func do_intent() -> void:
         EnemyType.STATIONARY:
             pass
         EnemyType.TANK:
+            # TODO: Attack
             var target_board_position := board_postion + Vector2.DOWN
             if !BOARD.is_in_board(target_board_position) or !BOARD.is_available(target_board_position):
                 return
