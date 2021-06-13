@@ -12,10 +12,13 @@ onready var INFO_CONTAINER := $Panel/VBoxContainer/InfoContainer
 var info: Node = null
 
 
+func _ready() -> void:
+    $SelectLevelButton.get_popup().connect("id_pressed", self, "_on_id_pressed")
+
+
 func update_unit_hud(selected_unit: Unit) -> void:
     SELECTED_UNIT_LABEL.text = "Nothing selected"
     if info != null:
-        INFO_CONTAINER.remove_child(info)
         info.queue_free()
         info = null
 
@@ -32,3 +35,7 @@ func update_unit_hud(selected_unit: Unit) -> void:
             info = EnemyInfo.instance()
             info.set_info(selected_unit)
     INFO_CONTAINER.add_child(info)
+
+
+func _on_id_pressed(id: int) -> void:
+    get_parent().select_level(id)
